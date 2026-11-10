@@ -53,6 +53,14 @@ flowchart LR
 ### 🧠 Engineering Stack
 
 `Python` · `FastAPI` · `Google Gemini` · `SQLite` · `JavaScript` · `Pytest`
+<img width="1280" height="605" alt="Screenshot (638)(1)" src="https://github.com/user-attachments/assets/2680ec53-e6d4-4494-8499-f7af4a677ddc" />
+<img width="1280" height="612" alt="Screenshot (639)(2)" src="https://github.com/user-attachments/assets/8baed8c8-2deb-4ade-9260-d8eb27f643ba" />
+<img width="1280" height="620" alt="Screenshot (637)(1)" src="https://github.com/user-attachments/assets/5ba2f10f-b862-4d31-869a-dce3cdad7909" />
+<img width="1280" height="581" alt="Screenshot (641)(1)" src="https://github.com/user-attachments/assets/a71433f5-354b-4dfb-be32-dafe154174b8" />
+
+
+
+
 
 ### 🚀 Run Locally
 
