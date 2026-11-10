@@ -1,200 +1,201 @@
-# Flarre-Fuzz 🥊
+# 🥊 Flarre-Fuzz
+### The adversarial testing arena for AI-generated insurance code.
 
-🥊 Flarre-Fuzz
-Adversarial Testing & Automated Repair for AI-Generated Insurance Code
+**What if AI writes an insurance pricing function that looks correct, passes basic tests, but quietly misprices thousands of policies?**
 
-**AI can write insurance rating logic. But who challenges it before it reaches production?**
+Flarre-Fuzz is a multi-agent adversarial testing framework that challenges insurance rating logic with edge cases, discovers hidden business-rule violations, and proposes targeted fixes — then tests the repaired code again.
 
-A misplaced boundary, incorrect surcharge cap or rounding error can silently misprice policies. Ordinary tests may miss these defects because the code can execute successfully and still violate business rules.
+**AI explores. Deterministic rules judge. Humans approve.**
 
-**Flarre-Fuzz is an insurance-focused, multi-agent framework that deliberately attacks candidate rating code, detects hidden logic defects and attempts to repair them through a verify-again loop.**
+[🚀 Quick Start](#-quick-start) · [⚙️ How It Works](#-how-it-works) · [📊 Benchmark](#-prototype-benchmark) · [🧪 Example](#-see-it-in-action)
 
-> **AI explores. Deterministic rules judge. Humans approve.**
+---
 
-## 💡 How It Works
+## 💡 Why Flarre-Fuzz?
 
-Flarre-Fuzz brings specialized agents together in one adversarial testing pipeline.
+AI-generated code can look convincing while containing subtle mistakes:
 
-| Agent | Responsibility |
+- An age boundary handled incorrectly.
+- A surcharge that exceeds its permitted cap.
+- A discount applied beyond the allowed limit.
+- A rounding or truncation error.
+- A business rule that fails only for unusual customer profiles.
+
+Traditional tests catch the cases developers think to test.
+
+**Flarre-Fuzz actively searches for the cases they might have missed.**
+
+## 🥊 Meet the agents
+
+| Agent | Its job |
 |---|---|
-| 🥊 **Bully** | Generates adversarial customer profiles using boundary, randomized and Gemini-powered testing. |
-| 🧪 **Sandbox** | Executes candidate rating code against generated profiles. |
-| ⚖️ **Referee** | Checks outputs against deterministic business rules and identifies violations. |
-| 🔍 **Minimizer** | Reduces failing inputs into smaller, reproducible counterexamples. |
-| 📚 **Clause Retrieval** | Retrieves relevant insurance rule context to support diagnosis and repair. |
-| 🔧 **Fixer** | Analyzes failures and proposes targeted code patches. |
-| 🎛️ **Orchestrator** | Coordinates agents, repair attempts and re-verification. |
+| 🥊 **Bully** | Generates adversarial customer profiles and edge cases. |
+| 🏟️ **Sandbox** | Executes the candidate rating code against generated inputs. |
+| ⚖️ **Referee** | Checks outputs against deterministic business rules. |
+| 🔍 **Minimizer** | Reduces failures to small, understandable counterexamples. |
+| 📚 **Clause Retrieval** | Retrieves relevant insurance-rule context. |
+| 🛠️ **Fixer** | Proposes targeted code corrections. |
+| 🎯 **Orchestrator** | Coordinates the complete testing and repair loop. |
 
-### The Adversarial Loop
+## ⚙️ How It Works
 
-**Generate → Execute → Challenge → Minimize → Retrieve Rules → Repair → Re-verify**
+```mermaid
+flowchart TD
+    A["Insurance Rating Code"] --> B["🥊 Bully"]
+    B --> C["🏟️ Sandbox"]
+    C --> D["⚖️ Referee"]
+    D --> E{"Rule Violation?"}
+    E -->|No| F["✅ Validation Result"]
+    E -->|Yes| G["🔍 Minimizer"]
+    G --> H["📚 Clause Retrieval"]
+    H --> I["🛠️ Fixer"]
+    I --> J["🔁 Re-run Verification"]
+    J --> D
+    F --> K["👤 Human Review"]
+```
 
-A proposed repair is never automatically trusted. It must pass validation again.
+**The important part:** Gemini helps generate challenging inputs and propose fixes. It does not decide whether the insurance logic is correct. The Referee uses deterministic checks against the encoded rules.
 
-## 🎯 Example: A Hidden Pricing Defect
+## 🧪 See It in Action
 
-Suppose a rating function applies a different premium rule at age 30 but contains an incorrect comparison operator.
+Imagine an insurance company has this rule:
 
-- Bully generates profiles around age 30.
-- Sandbox executes the rating function.
-- Referee detects a business-rule violation.
-- Minimizer isolates the failing input.
-- Clause Retrieval provides relevant rule context.
-- Fixer proposes a correction.
-- The Orchestrator reruns validation to check the repair.
+> Drivers aged 25 or above should not receive the young-driver surcharge.
 
-**The objective is not just to find a bug, but to produce an explainable failure and a verifiable repair.**
+But an AI-generated function accidentally uses the wrong boundary.
 
-## 🏗️ Engineering Approach
+```python
+def calculate_premium(age, base_premium):
+    if age <= 25:
+        return base_premium * 1.10
 
-- **Multiple testing strategies:** Boundary, randomized and LLM-powered scenario generation.
-- **Separation of concerns:** AI generates scenarios and repair proposals; deterministic checks evaluate correctness.
-- **Reproducibility:** Failing cases are captured and minimized.
-- **Controlled repair:** Patches go through re-verification.
-- **Human oversight:** Results are intended for engineering review, not automatic production approval.
+    return base_premium
+```
 
-## 📊 Experimental Results
+A normal test might check age 20 and age 30 — and miss the mistake.
 
-Evaluated against five deliberately planted defect categories:
+Flarre-Fuzz challenges the boundary:
 
-- Age boundary
-- Surcharge cap
-- Discount cap
-- Truncation
-- Mid-range boundary
+| Age | Expected behaviour | Actual behaviour |
+|---:|---|---|
+| 20 | 10% surcharge | 10% surcharge |
+| 24 | 10% surcharge | 10% surcharge |
+| **25** | **No surcharge** | **10% surcharge ❌** |
+| 26 | No surcharge | No surcharge |
 
-| Experiment | Defects detected |
+The Referee identifies the violation, the Minimizer isolates the failing input, and the Fixer proposes a correction.
+
+The repaired code is then tested again.
+
+**Find it → Explain it → Fix it → Verify it.**
+
+## 📊 Prototype Benchmark
+
+Results from the controlled five-defect prototype benchmark:
+
+| Testing strategy | Defects detected |
 |---|---:|
 | Boundary only | 4/5 |
 | Random only | 5/5 |
+| Boundary + Random | 5/5 |
 | Gemini only | 5/5 |
-| Combined strategies | 5/5 |
+| Boundary + Random + Gemini | **5/5** |
 
-The recorded ablation reported **zero false alarms on the correct benchmark code**.
+- **5** planted defects detected by the combined strategy.
+- **40** Gemini-generated profiles.
+- **0** false alarms on the tested correct-code benchmark.
 
-These are controlled prototype benchmark results, not production performance guarantees.
+These are prototype results on a controlled test set, not production performance guarantees.
 
-## ⚙️ Technology Stack
+## 🏗️ Built With
 
-Python · FastAPI · Google Gemini · SQLite · HTML/CSS/JavaScript · Pytest
+| Layer | Technology |
+|---|---|
+| Backend | Python, FastAPI |
+| AI-powered generation and repair | Google Gemini |
+| Rule validation | Deterministic Python checks |
+| Data storage | SQLite |
+| Interface | HTML, CSS, JavaScript |
+| Testing | Pytest |
 
-## 🚀 Run Locally
+## 🚀 Quick Start
+
+**1. Clone the repository**
 
 ```bash
 git clone https://github.com/vuppunuthulanandini/Flarre-Fuzz.git
 cd Flarre-Fuzz
+```
+
+**2. Create and activate a virtual environment**
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+**3. Install dependencies**
+
+```bash
 pip install -r requirements.txt
 ```
 
-Configure `GEMINI_API_KEY` in your local `.env` file using `.env.example`, then run:
+**4. Configure Gemini**
+
+Create a `.env` file using `.env.example` and add your Gemini API key.
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+**5. Start Flarre-Fuzz**
 
 ```bash
 uvicorn flarre_fuzz.api:app --reload
 ```
 
-Open `http://127.0.0.1:8000` or `http://127.0.0.1:8000/docs`.
+Open the application:
 
-## 🔭 What's Next?
+- **Web interface:** http://127.0.0.1:8000
+- **API documentation:** http://127.0.0.1:8000/docs
 
-- Carrier-specific rating rules and deeper insurance domain integration.
-- Property-based and mutation testing.
-- Stronger sandbox isolation and execution controls.
-- Regression testing and multi-patch verification.
-- CI/CD integration and enterprise audit trails.
-- Human approval workflows and versioned rule specifications.
+## 🎬 Suggested Demo Journey
 
-## Why Flarre-Fuzz for Flarre?
+1. Submit an insurance rating function.
+2. Let Bully generate adversarial profiles.
+3. Watch Sandbox execute the test cases.
+4. See Referee identify business-rule violations.
+5. Inspect the minimized counterexample.
+6. Let Fixer propose a correction.
+7. Re-run verification and inspect the result.
 
-Flarre focuses on insurance-native intelligence and enterprise execution. Flarre-Fuzz explores a complementary layer: **independently challenging the business logic that AI agents generate or modify.**
+## 🔮 What's Next?
 
-The vision is to make insurance code more testable, explainable and trustworthy before it moves downstream.
+- More insurance-specific rule libraries.
+- Richer policy and customer profile generation.
+- Stronger repair validation and human approval workflows.
+- More complex multi-rule and cross-field testing.
+- Integration with insurance development pipelines.
 
-**Don't just ask whether AI-generated insurance code works. Challenge it until you have evidence that it follows the rules.**
+## 🏢 Why It Matters for Insurance AI
+
+As AI becomes more involved in building and modifying insurance workflows, testing needs to go beyond whether code executes successfully.
+
+Flarre-Fuzz explores an additional safety layer: challenge generated insurance logic, identify violations against encoded business rules, and verify proposed corrections before human approval.
+
+It is designed as a complementary validation layer for insurance-native AI engineering platforms.
 
 ---
 
-**Built for Flarre AI Hackathon 2026**
+## 📂 Explore the Project
 
-[Project Proposal](docs/FlarreFuzz_Proposal.pdf) · [Presentation](docs/FlarreFuzz_Presentation.pptx) · [Demo Script](docs/DEMO_SCRIPT.md) · [Architecture](docs/architecture.png) · [QA Preparation](docs/QA_PREP.md)
+- [Source Code](https://github.com/vuppunuthulanandini/Flarre-Fuzz)
+- [Architecture Diagram](docs/architecture.png)
+- [Project Proposal](docs/)
+- [Presentation](docs/)
 
-![Architecture](docs/architecture.png)
+---
 
-## Quick start
-```bash
-./run.sh            # macOS / Linux   (Windows: double-click run.bat)
-```
-or manually:
-```bash
-pip install -r requirements.txt
-python -m flarre_fuzz          # opens http://127.0.0.1:8000, then click "Run scan"
-pytest                         # 22 tests (never calls a real LLM)
-python -m flarre_fuzz.ablation # which Bully layer finds which bug
-```
-Optional LLM layers: `export ANTHROPIC_API_KEY=...` (model override: `FLARRE_MODEL`). Without a key the Fixer uses a
-stored patch and the UI says so.
-
-## Using your API key (enables the LLM layers)
-```bash
-cp .env.example .env          # then put your key in .env  (it is git-ignored; never commit or share it)
-python -m flarre_fuzz.check_llm   # verifies the key, runs the LLM Bully + Fixer, prints a MEASURED ablation table
-python -m flarre_fuzz             # the Arena now shows "LLM: <model>"; tick the "LLM-invented" layer and Run scan
-```
-Get a key at console.anthropic.com (API access is billed separately from a Claude chat subscription; a full scan costs a few cents).
-If anything is wrong (bad key, no credits, wrong model name) the UI and `check_llm` say exactly what, instead of failing silently.
-
-## What's in the box
-| | |
-|---|---|
-| `flarre_fuzz/` | The working system: Bully, sandbox, Referee, minimizer, clause retrieval, Fixer, orchestrator, FastAPI, SQLite, Arena web UI |
-| `tests/` | 22 pytest tests (core logic and the full API flow) |
-| `docs/FlarreFuzz_Proposal.pdf` | 3-page proposal |
-| `docs/FlarreFuzz_Presentation.pptx` | 7-slide deck |
-| `docs/presentation_interactive.html` | **Interactive 9-slide presentation with a live in-browser demo** (just open it) |
-| `docs/architecture_interactive.html` | **Clickable architecture diagram with a "play a scan" animation** (just open it) |
-| `docs/DEMO_SCRIPT.md` | A 4-minute demo script with a fallback plan |
-| `docs/QA_PREP.md` | The tough questions you will get, with honest answers |
-| `docs/SUBMISSION_CHECKLIST.md`, `docs/EMAIL_TEMPLATE.txt` | Ready for the email to the organisers |
-| `personalize.py` | Puts your name and college into every deliverable |
-
-## What the Arena UI shows
-Animated Bully-vs-Referee scan · (age × claims) coverage heatmap · root-cause bars · **minimal reproductions**
-("age 25, no claims, expected 500, got 750, violates spec rule 2") · patch diff · approve/reject with reason ·
-ablation tab · audit timeline.
-
-## Results (measured; toy calculator with 5 planted bugs; deterministic layers only)
-| Planted bug | Boundary only | Random only | Boundary + random |
-|---|---|---|---|
-| age boundary (`<=` vs `<`) | found (24) | found (11) | found (33) |
-| claims surcharge cap | found (137) | found (777) | found (904) |
-| 20% discount cap | found (108) | found (263) | found (362) |
-| truncation vs rounding | found (89) | found (313) | found (392) |
-| age-29 off-by-one | **MISSED** | found (8) | found (8) |
-| false alarms on correct code | 0 | 0 | 0 |
-
-The hand-picked boundary layer never probes age 29, so it misses that bug. That is exactly why several layers exist.
-
-## Engineering map
-| Skill | Where |
-|---|---|
-| Python, Git, best practice | Packaged code, type hints, 22 tests, commit history |
-| Data structures & algorithms | Hash-map neighbour checks (monotonic invariant), delta-debugging failure shrinker, set-based dedupe |
-| REST & backend | FastAPI: `/scans`, `/scans/{id}/decision`, `/audit`, `/ablation`, `/health` |
-| JSON, databases | SQLite persistence; Pydantic validation of every LLM output; `ast` check on patches |
-| LLMs / GenAI | Bully invents rare cases; Fixer proposes patches (both optional, both validated) |
-| Retrieval | TF-IDF clause retrieval links each failure to the spec rule it violates |
-| Agent frameworks | Orchestrator is plain Python by choice; maps directly onto a LangGraph state graph |
-
-## Honest status
-- The LLM Bully and Fixer are built and validated but **not yet measured** (needs an API key). They add columns to the ablation once configured.
-- The target is a **toy calculator** written for this project; the sandbox is **process isolation**, not a replica of a carrier system (never expose it publicly).
-- The Referee is only as good as its invariants and reference. Testing finds bugs; it cannot prove their absence.
-- The interactive deck's live demo is a **JavaScript port** of the engine (simplified Referee); its Fixer step uses the stored correct patch.
-- Flarre already lists a Testing Agent; this is designed as a **complementary adversarial layer**, and its internals were not available for this design.
-- The UI was verified with scripted DOM tests and API tests; give it a visual once-over in your own browser.
-
-## Layout
-```
-flarre_fuzz/   bully · sandbox · referee · reference · minimize · clauses · fixer · orchestrator · schemas · db · api · ablation · static/index.html · data/
-tests/         test_core.py · test_api.py
-docs/          proposal · decks · diagrams · demo script · Q&A prep · checklist · email template · source/
-```
+**Flarre-Fuzz 🥊 — Don't just test the happy path. Fight for the edge cases.**
