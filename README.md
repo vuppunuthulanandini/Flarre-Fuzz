@@ -1,13 +1,121 @@
 # Flarre-Fuzz 🥊
 
-**An AI boxing ring that attacks AI-written insurance code before it reaches a carrier's systems.**
+🥊 Flarre-Fuzz
+Adversarial Testing & Automated Repair for AI-Generated Insurance Code
 
-AI agents now write pricing and rating logic for insurers, and one small mistake (a wrong boundary, a missing cap,
-a rounding slip) can misprice thousands of policies. Flarre-Fuzz is an adversarial safety layer: a **Bully** invents
-the nastiest customers, a **deterministic Referee** judges every answer, a **Fixer** proposes a repair, the **full suite
-re-runs** on it, and a **human** approves. Every step is logged.
+**AI can write insurance rating logic. But who challenges it before it reaches production?**
 
-> **Design rule:** LLMs handle creativity and explanation. Deterministic code decides what is correct.
+A misplaced boundary, incorrect surcharge cap or rounding error can silently misprice policies. Ordinary tests may miss these defects because the code can execute successfully and still violate business rules.
+
+**Flarre-Fuzz is an insurance-focused, multi-agent framework that deliberately attacks candidate rating code, detects hidden logic defects and attempts to repair them through a verify-again loop.**
+
+> **AI explores. Deterministic rules judge. Humans approve.**
+
+## 💡 How It Works
+
+Flarre-Fuzz brings specialized agents together in one adversarial testing pipeline.
+
+| Agent | Responsibility |
+|---|---|
+| 🥊 **Bully** | Generates adversarial customer profiles using boundary, randomized and Gemini-powered testing. |
+| 🧪 **Sandbox** | Executes candidate rating code against generated profiles. |
+| ⚖️ **Referee** | Checks outputs against deterministic business rules and identifies violations. |
+| 🔍 **Minimizer** | Reduces failing inputs into smaller, reproducible counterexamples. |
+| 📚 **Clause Retrieval** | Retrieves relevant insurance rule context to support diagnosis and repair. |
+| 🔧 **Fixer** | Analyzes failures and proposes targeted code patches. |
+| 🎛️ **Orchestrator** | Coordinates agents, repair attempts and re-verification. |
+
+### The Adversarial Loop
+
+**Generate → Execute → Challenge → Minimize → Retrieve Rules → Repair → Re-verify**
+
+A proposed repair is never automatically trusted. It must pass validation again.
+
+## 🎯 Example: A Hidden Pricing Defect
+
+Suppose a rating function applies a different premium rule at age 30 but contains an incorrect comparison operator.
+
+- Bully generates profiles around age 30.
+- Sandbox executes the rating function.
+- Referee detects a business-rule violation.
+- Minimizer isolates the failing input.
+- Clause Retrieval provides relevant rule context.
+- Fixer proposes a correction.
+- The Orchestrator reruns validation to check the repair.
+
+**The objective is not just to find a bug, but to produce an explainable failure and a verifiable repair.**
+
+## 🏗️ Engineering Approach
+
+- **Multiple testing strategies:** Boundary, randomized and LLM-powered scenario generation.
+- **Separation of concerns:** AI generates scenarios and repair proposals; deterministic checks evaluate correctness.
+- **Reproducibility:** Failing cases are captured and minimized.
+- **Controlled repair:** Patches go through re-verification.
+- **Human oversight:** Results are intended for engineering review, not automatic production approval.
+
+## 📊 Experimental Results
+
+Evaluated against five deliberately planted defect categories:
+
+- Age boundary
+- Surcharge cap
+- Discount cap
+- Truncation
+- Mid-range boundary
+
+| Experiment | Defects detected |
+|---|---:|
+| Boundary only | 4/5 |
+| Random only | 5/5 |
+| Gemini only | 5/5 |
+| Combined strategies | 5/5 |
+
+The recorded ablation reported **zero false alarms on the correct benchmark code**.
+
+These are controlled prototype benchmark results, not production performance guarantees.
+
+## ⚙️ Technology Stack
+
+Python · FastAPI · Google Gemini · SQLite · HTML/CSS/JavaScript · Pytest
+
+## 🚀 Run Locally
+
+```bash
+git clone https://github.com/vuppunuthulanandini/Flarre-Fuzz.git
+cd Flarre-Fuzz
+pip install -r requirements.txt
+```
+
+Configure `GEMINI_API_KEY` in your local `.env` file using `.env.example`, then run:
+
+```bash
+uvicorn flarre_fuzz.api:app --reload
+```
+
+Open `http://127.0.0.1:8000` or `http://127.0.0.1:8000/docs`.
+
+## 🔭 What's Next?
+
+- Carrier-specific rating rules and deeper insurance domain integration.
+- Property-based and mutation testing.
+- Stronger sandbox isolation and execution controls.
+- Regression testing and multi-patch verification.
+- CI/CD integration and enterprise audit trails.
+- Human approval workflows and versioned rule specifications.
+
+## Why Flarre-Fuzz for Flarre?
+
+Flarre focuses on insurance-native intelligence and enterprise execution. Flarre-Fuzz explores a complementary layer: **independently challenging the business logic that AI agents generate or modify.**
+
+The vision is to make insurance code more testable, explainable and trustworthy before it moves downstream.
+
+**Don't just ask whether AI-generated insurance code works. Challenge it until you have evidence that it follows the rules.**
+
+---
+
+**Built for Flarre AI Hackathon 2026**
+
+[Project Proposal](docs/FlarreFuzz_Proposal.pdf) · [Presentation](docs/FlarreFuzz_Presentation.pptx) · [Demo Script](docs/DEMO_SCRIPT.md) · [Architecture](docs/architecture.png) · [QA Preparation](docs/QA_PREP.md)
 
 ![Architecture](docs/architecture.png)
 
