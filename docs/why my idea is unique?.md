@@ -1,5 +1,4 @@
-** **honest answers** **
-
+**WHAT IS SPECIAL WITH MY PROJECT????**
 **Why not just paste the code into ChatGPT?**
 An LLM can draft or explain, but it can hallucinate and nobody can prove its answer correct. Here it only creates and explains.
 Judging is plain code (repeatable), every fix is re-run against the whole suite, a human approves, and everything is logged.
