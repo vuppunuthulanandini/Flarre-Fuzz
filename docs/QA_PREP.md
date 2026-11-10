@@ -1,4 +1,4 @@
-# Tough questions and honest answers
+** **honest answers** **
 
 **Why not just paste the code into ChatGPT?**
 An LLM can draft or explain, but it can hallucinate and nobody can prove its answer correct. Here it only creates and explains.
