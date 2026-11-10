@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flarre-Fuzz: Interactive Architecture</title>
+<style>
+:root{--bg:#0b1020;--card:#151b33;--line:#2a3354;--tx:#e8ecf8;--mu:#9aa5c2;--cy:#1fb6e8;--ro:#e8557a;--gr:#2ecc9a;--am:#f5a623;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:inherit}
+body{margin:0;background:radial-gradient(1000px 520px at 10% -10%,#18235a 0,transparent 60%),var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:22px}
+h1{font:700 30px Cambria,Georgia,serif;margin:0}h1 b{color:var(--ro)}.sub{color:var(--mu);margin:4px 0 16px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+button{background:transparent;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font:inherit;cursor:pointer;transition:.15s}
+button:hover{color:#fff}button.on{color:#fff;border-color:var(--cy);background:rgba(31,182,232,.16)}
+#play{background:linear-gradient(90deg,var(--ro),#c43a63);color:#fff;border:0;font-weight:700;padding:8px 22px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.box{background:linear-gradient(180deg,var(--card),#121830);border:1px solid var(--line);border-radius:16px;padding:14px}
+svg{width:100%;height:auto;display:block}
+.node{cursor:pointer}.node rect{fill:#151b33;stroke-width:2.2;transition:.2s}.node:hover rect,.node.sel rect{fill:#1d2650;filter:drop-shadow(0 0 10px var(--c))}
+.node.act rect{fill:#24306b;filter:drop-shadow(0 0 16px var(--c))}
+.node text{fill:#fff;font-family:system-ui,sans-serif;text-anchor:middle;pointer-events:none}.t1{font-size:17px;font-weight:700}.t2{font-size:11.5px;fill:#c9d1e6!important}.t3{font-size:11px;font-weight:700}
+.edge{stroke:#5a6690;stroke-width:2;fill:none;marker-end:url(#ar)}.edge.d{stroke-dasharray:6 5}
+.lbl{fill:#9aa5c2;font:11px system-ui,sans-serif;text-anchor:middle}.lane{fill:#9aa5c2;font:700 11px system-ui,sans-serif;letter-spacing:2px}
+#pk{fill:#fff;filter:drop-shadow(0 0 8px #1fb6e8)}
+.cap{min-height:26px;color:#fff;font-weight:600;margin:10px 4px 0}
+#panel h2{font:700 22px Cambria,Georgia,serif;margin:0 0 6px}#panel h4{margin:14px 0 3px;color:var(--cy);font-size:12px;letter-spacing:1.5px;text-transform:uppercase}
+#panel p{margin:0;color:#d6dcee;font-size:14px}.kind{display:inline-block;border:1px solid;border-radius:999px;padding:1px 12px;font-size:12px}
+.hint{color:var(--mu);font-size:13px;margin-top:12px}.leg{display:flex;flex-wrap:wrap;gap:14px;color:var(--mu);font-size:12px;margin-top:8px}.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<h1>Flarre<b>-</b>Fuzz <span style="font-weight:400;color:var(--mu)">architecture</span></h1>
+<div class="sub">Click any component to see what it does and why. Press Play to watch one scan travel through the system.</div>
+<div class="bar"><button id="play">▶ Play a scan</button><button class="on" data-m="type">Who decides: LLM vs code</button><button data-m="stack">Tech stack</button><span style="flex:1"></span></div>
+<div class="grid"><div class="box"><svg viewBox="0 0 1000 560" id="svg" role="img" aria-label="Flarre-Fuzz architecture diagram">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5a6690"/></marker></defs>
+<text class="lane" x="20" y="38">DETECT</text><text class="lane" x="20" y="262">REPAIR AND GOVERN</text><text class="lane" x="20" y="430">PLATFORM</text>
+<g id="edges"></g><g id="nodes"></g><circle id="pk" r="9" cx="-20" cy="-20"/></svg>
+<div class="cap" id="cap"> </div>
+<div class="leg"><span><i style="background:var(--ro)"></i>uses an LLM</span><span><i style="background:var(--gr)"></i>deterministic code</span><span><i style="background:var(--am)"></i>storage / sandbox</span><span><i style="background:var(--cy)"></i>human / interface</span></div></div>
+<div class="box" id="panel"><h2>Select a component</h2><p class="hint">Every box is clickable. The design rule to look for: <b>LLMs handle creativity and explanation; deterministic code decides what is correct.</b></p></div></div>
+</div>
+<script>
+const N=[
+{id:'in',x:20,y:60,t:'INPUT',s:['Code under test','+ business rules (spec)'],c:'#1fb6e8',k:'Human / interface',stk:'Plain-English spec + Python source',do:'Receives the AI-written code and the written business rules. The spec is the source of truth the whole pipeline is judged against.',io:'In: code + spec. Out: both handed to the Bully and Referee.',why:'Starting from a written spec means a reviewer can audit every verdict against a rule number.',cap:'A scan starts with AI-written code and the business rules.'},
+{id:'bu',x:270,y:60,t:'BULLY',s:['Boundary values','Random fuzzing','LLM-invented rare cases'],c:'#e8557a',k:'LLM + code',stk:'Python, random (seeded), LLM API, Pydantic',do:'Generates attack profiles in three layers. Hand-picked boundaries and seeded random fuzzing are code; the optional LLM layer reads the spec and invents rare cases. Every LLM profile is validated by Pydantic and dropped if invalid.',io:'In: spec. Out: ~1,100 customer profiles (JSON).',why:'Hand-picked boundaries missed the age-29 bug in our ablation, which is exactly why several layers exist.',cap:'The Bully launches ~1,100 tricky customer profiles.'},
+{id:'sb',x:520,y:60,t:'SANDBOX',s:['Isolated subprocess','Timeout + crash capture'],c:'#f5a623',k:'Storage / sandbox',stk:'Python subprocess, tempfile, JSON over stdin',do:'Runs the code under test on every profile in a separate process with a timeout. Crashes and infinite loops become findings instead of taking the system down.',io:'In: code + profiles. Out: one result per profile.',why:'Honest limit: this is process isolation, a stand-in for a system clone. Production would use containers.',cap:'The code runs in an isolated sandbox. A hang or crash is caught.'},
+{id:'rf',x:770,y:60,t:'REFEREE',s:['Invariants +','reference calculator','No LLM, repeatable'],c:'#2ecc9a',k:'Deterministic code',stk:'Python, hash-map neighbour lookups',do:'Judges every result two ways: invariants that must always hold (positive, capped, more claims never cheaper, discount cap) and comparison against a trusted reference implementation.',io:'In: profiles + results. Out: failures with the rule broken.',why:'Correctness must be repeatable and not hallucinated, so the judge is plain code. It is only as good as its invariants and reference.',cap:'The Referee compares every answer with the reference and the invariants.'},
+{id:'fx',x:770,y:290,t:'FIXER',s:['Minimal repros','+ spec clause retrieval','LLM proposes a patch'],c:'#e8557a',k:'LLM + code',stk:'Delta-debugging shrinker, TF-IDF retrieval, LLM API, ast validation',do:'Failures are shrunk to minimal reproductions and linked to the spec clause they violate. The LLM then proposes a patch citing that clause. The patch must parse and keep the premium(...) signature.',io:'In: failures + clauses. Out: patched code + explanation.',why:'A reviewer sees "age 25, no claims, spec rule 2" instead of 1,100 raw failures.',cap:'Failures are shrunk to minimal cases and a fix is proposed.'},
+{id:'rv',x:520,y:290,t:'RE-VERIFY',s:['Full suite re-run','on patched code','max 3 attempts'],c:'#2ecc9a',k:'Deterministic code',stk:'Same Referee + Sandbox',do:'The entire suite runs again on the patched code. Only a patch that removes the failures without creating new ones moves on. A retry limit stops endless loops.',io:'In: patch. Out: remaining failures (target: 0).',why:'LLM patches can be wrong, so nothing reaches a human unproven.',cap:'The whole suite re-runs on the patch to prove the fix.'},
+{id:'hu',x:270,y:290,t:'HUMAN REVIEW',s:['Sees diff + re-test','Approve or reject'],c:'#1fb6e8',k:'Human / interface',stk:'HTML/JS Arena UI, REST decision endpoint',do:'A reviewer sees the coverage heatmap, minimal repros, the patch diff and the re-test result, then approves or rejects with a reason.',io:'In: verified patch. Out: decision.',why:'Humans keep the final say. This is a safety layer for engineers, not a replacement.',cap:'A human approves or rejects the verified fix.'},
+{id:'au',x:20,y:290,t:'AUDIT LOG',s:['Timestamp, bug, fix,','decision, re-test'],c:'#f5a623',k:'Storage / sandbox',stk:'SQLite',do:'Every scan, finding and decision is written with a timestamp, so an auditor can see who approved what and why.',io:'In: events. Out: audit timeline (GET /audit).',why:'Traceability is what regulated industries ask for first.',cap:'Everything is logged for audit.'},
+{id:'ui',x:20,y:455,w:290,h:78,t:'ARENA UI',s:['HTML/JS: heatmap, diff, review'],c:'#1fb6e8',k:'Interface',stk:'Vanilla HTML/CSS/JS served by FastAPI',do:'Animated scan replay, coverage heatmap, root-cause bars, minimal repros, diff view, review controls, ablation and audit tabs.',io:'Talks to the API over REST.',why:'Makes the result readable in seconds for a non-specialist reviewer.',cap:'The reviewer works in the Arena UI.'},
+{id:'ap',x:355,y:455,w:290,h:78,t:'FASTAPI',s:['REST: /scans /decision /audit','Pydantic-validated'],c:'#2ecc9a',k:'Deterministic code',stk:'FastAPI, Pydantic v2, uvicorn',do:'POST /scans runs the orchestrator; GET /scans/{id}, POST /scans/{id}/decision, GET /audit, GET /ablation, GET /health. All payloads validated.',io:'Orchestrates the loop in plain Python (no agent framework needed).',why:'A REST backend means CI pipelines could call the same scan.',cap:'The API orchestrates the loop and validates every payload.'},
+{id:'db',x:690,y:455,w:290,h:78,t:'SQLITE + CLAUSE INDEX',s:['scans, failures, audit','TF-IDF spec retrieval'],c:'#f5a623',k:'Storage',stk:'SQLite, pure-Python TF-IDF',do:'Persists scans, failures and decisions; the clause index maps failures to the spec rule they violate.',io:'Embeddings and a vector DB would replace TF-IDF for a large rulebook.',why:'Small, dependency-free, and honest about its scale.',cap:'Results and decisions are persisted.'}];
+const E=[['in','bu'],['bu','sb'],['sb','rf'],['rf','fx','failures'],['fx','rv','patch'],['rv','hu','passes'],['hu','au','decision'],['ui','ap'],['ap','db']];
+const nd=Object.fromEntries(N.map(n=>[n.id,{w:190,h:112,...n}]));const NS='http://www.w3.org/2000/svg';
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e};
+const ctr=n=>[n.x+n.w/2,n.y+n.h/2];
+function edge(a,b,l,d){const A=nd[a],B=nd[b];let x1,y1,x2,y2;
+ if(Math.abs(A.y-B.y)<5){const r=A.x<B.x;x1=r?A.x+A.w:A.x;x2=r?B.x:B.x+B.w;y1=y2=A.y+A.h/2}else{x1=x2=ctr(A)[0];y1=A.y+A.h;y2=B.y}
+ const p=el('path',{d:`M${x1} ${y1}L${x2} ${y2}`,class:'edge'+(d?' d':'')},$('#edges'));if(l)el('text',{x:(x1+x2)/2,y:(y1+y2)/2-7,class:'lbl'},$('#edges')).textContent=l}
+const $=s=>document.querySelector(s);let mode='type',sel=null;
+E.forEach(([a,b,l])=>edge(a,b,l));
+el('path',{d:'M615 290L615 172',class:'edge d'},$('#edges'));el('text',{x:650,y:236,class:'lbl'},$('#edges')).textContent='re-run';
+const kc={'LLM + code':'#e8557a','Deterministic code':'#2ecc9a','Human / interface':'#1fb6e8','Interface':'#1fb6e8','Storage / sandbox':'#f5a623','Storage':'#f5a623'};
+N.forEach(n=>{const o=nd[n.id],g=el('g',{class:'node',id:'n-'+n.id,tabindex:0,role:'button','aria-label':n.t},$('#nodes'));
+ o.col=mode==='type'?kc[n.k]:n.c;g.style.setProperty('--c',kc[n.k]||n.c);
+ el('rect',{x:o.x,y:o.y,width:o.w,height:o.h,rx:14,stroke:kc[n.k]||n.c},g);
+ el('text',{x:o.x+o.w/2,y:o.y+28,class:'t1'},g).textContent=n.t;
+ n.s.forEach((s,i)=>el('text',{x:o.x+o.w/2,y:o.y+50+i*17,class:'t2'},g).textContent=s);
+ el('text',{x:o.x+o.w/2,y:o.y+o.h-12,class:'t3',fill:kc[n.k]},g).textContent=n.k.toUpperCase();
+ g.onclick=()=>pick(n.id);g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(n.id)}}});
+function pick(id){sel=id;document.querySelectorAll('.node').forEach(g=>g.classList.toggle('sel',g.id==='n-'+id));const n=nd[id];
+ $('#panel').innerHTML=`<h2>${n.t}</h2><span class="kind" style="color:${kc[n.k]};border-color:${kc[n.k]}">${n.k}</span><h4>What it does</h4><p>${n.do}</p><h4>Inputs and outputs</h4><p>${n.io}</p><h4>Why it is built this way</h4><p>${n.why}</p><h4>Tech</h4><p>${n.stk}</p>`}
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));
+ document.querySelectorAll('.t3').forEach((t,i)=>t.textContent=mode==='stack'?N[i].stk.split(',')[0].split(' + ')[0].slice(0,26).toUpperCase():N[i].k.toUpperCase())});
+let playing=false;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function move(a,b){const [x1,y1]=ctr(nd[a]),[x2,y2]=ctr(nd[b]),t0=performance.now(),D=900;
+ await new Promise(res=>{(function f(t){const k=Math.min(1,(t-t0)/D);$('#pk').setAttribute('cx',x1+(x2-x1)*k);$('#pk').setAttribute('cy',y1+(y2-y1)*k);k<1?requestAnimationFrame(f):res()})(t0)})}
+$('#play').onclick=async()=>{if(playing)return;playing=true;$('#play').textContent='Playing…';
+ const seq=['in','bu','sb','rf','fx','rv','hu','au'];
+ for(let i=0;i<seq.length;i++){document.querySelectorAll('.node').forEach(g=>g.classList.remove('act'));$('#n-'+seq[i]).classList.add('act');$('#cap').textContent=nd[seq[i]].cap;
+  const [x,y]=ctr(nd[seq[i]]);if(i===0){$('#pk').setAttribute('cx',x);$('#pk').setAttribute('cy',y)}
+  await sleep(1300);if(i<seq.length-1)await move(seq[i],seq[i+1])}
+ document.querySelectorAll('.node').forEach(g=>g.classList.remove('act'));$('#cap').textContent='Done: bugs found, fix verified, decision logged.';$('#pk').setAttribute('cx',-20);$('#play').textContent='▶ Play again';playing=false};
+pick('rf');
+</script></body></html>

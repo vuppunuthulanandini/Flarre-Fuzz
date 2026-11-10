@@ -1,0 +1,440 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flarre-Fuzz: Arena</title>
+<style>
+:root{--bg:#0b1020;--card:#151b33;--card2:#1a2142;--line:#2a3354;--tx:#e8ecf8;--mu:#9aa5c2;--cy:#1fb6e8;--ro:#e8557a;--gr:#2ecc9a;--am:#f5a623;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 560px at 15% -10%,#18235a 0,transparent 60%),radial-gradient(900px 500px at 100% 0,#2a1238 0,transparent 55%),var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);backdrop-filter:blur(6px);position:sticky;top:0;z-index:5;background:rgba(11,16,32,.8)}
+.logo{font:700 22px Cambria,Georgia,serif;letter-spacing:.3px}.logo b{color:var(--ro)}
+nav{display:flex;gap:6px}
+nav button,.chip{background:transparent;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font:inherit;cursor:pointer;transition:.15s}
+nav button.on,.chip.on{color:#fff;border-color:var(--cy);background:rgba(31,182,232,.15)}
+nav button:hover,.chip:hover{color:#fff}
+.pills{display:flex;gap:8px;font-size:12px}.pill{border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--mu)}.pill.ok{color:var(--gr);border-color:var(--gr)}.pill.warn{color:var(--am);border-color:var(--am)}
+main{max-width:1180px;margin:0 auto;padding:26px 24px 80px}
+h2{font:700 20px Cambria,Georgia,serif;margin:0 0 12px}
+.card{background:linear-gradient(180deg,var(--card),#121830);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.hero{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-top:6px}
+.fighter{border-radius:18px;padding:22px;text-align:center;background:var(--card);border:2px solid var(--c);transition:.3s}
+.fighter h3{margin:0;font:700 26px Cambria,Georgia,serif;color:var(--c)}.fighter small{color:var(--mu);display:block;margin-top:4px}
+.fighter .n{font:700 40px ui-monospace,Menlo,monospace;margin-top:8px}
+#ring.go .fighter{animation:pulse .9s infinite alternate;box-shadow:0 0 28px var(--c)}
+@keyframes pulse{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+.vs{font:700 34px Cambria,Georgia,serif;color:var(--mu)}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px;justify-content:center}
+.step{padding:5px 14px;border-radius:999px;border:1px solid var(--line);color:var(--mu);font-size:13px;transition:.25s}
+.step.act{color:#fff;border-color:var(--cy);background:rgba(31,182,232,.22);box-shadow:0 0 12px rgba(31,182,232,.5)}.step.done{color:var(--gr);border-color:var(--gr)}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+#run{background:linear-gradient(90deg,var(--ro),#c43a63);color:#fff;border:0;border-radius:12px;padding:12px 28px;font:700 16px inherit;cursor:pointer;box-shadow:0 6px 20px rgba(232,85,122,.35)}
+#run:disabled{opacity:.55;cursor:wait}
+textarea,input{width:100%;background:#0d1226;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px ui-monospace,Menlo,monospace}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{background:var(--card2);border-radius:14px;padding:16px;border:1px solid var(--line)}
+.stat b{display:block;font:700 34px ui-monospace,Menlo,monospace}.stat span{color:var(--mu);font-size:13px}
+.hm{display:grid;grid-template-columns:repeat(85,1fr);gap:1px}
+.hm i{aspect-ratio:1;background:#1a2142;border-radius:1px}
+.hm i.t{background:#1d6b58}.hm i.f{background:var(--ro)}
+.ax{display:flex;justify-content:space-between;color:var(--mu);font-size:12px;margin-top:6px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--mu);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.bar{margin:10px 0}.bar div{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--ro),var(--am));transition:width .8s}
+.bar span{font-size:13px;color:var(--mu)}
+.rp{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--card2)}
+.rp b{color:var(--am)}.rp .rc{color:var(--mu);font-size:13px;margin-top:4px}
+.ok{color:var(--gr);font-style:normal;font-weight:700}.bad{color:var(--ro);font-style:normal;font-weight:700}
+.code{background:#0d1226;border:1px solid var(--line);border-radius:10px;padding:10px 0;font:12.5px/1.6 ui-monospace,Menlo,monospace;overflow-x:auto}
+.code div{padding:0 14px;white-space:pre}
+.d-{background:rgba(232,85,122,.16);color:#ffb3c6}
+.d\+{background:rgba(46,204,154,.16);color:#a6f0d6}
+.badge{display:inline-block;border-radius:999px;padding:2px 12px;font-size:12px;border:1px solid}
+.badge.fallback{color:var(--am);border-color:var(--am)}.badge.llm{color:var(--gr);border-color:var(--gr)}
+.btn{border:0;border-radius:10px;padding:10px 22px;font:700 14px inherit;cursor:pointer;color:#06210f}
+.btn.a{background:var(--gr)}.btn.r{background:var(--ro);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--mu);font-weight:600}
+td.f{color:var(--gr);font-weight:700}td.m{color:var(--ro);font-weight:700}
+.tl{border-left:2px solid var(--line);margin-left:8px;padding-left:18px}
+.tl div{margin:0 0 14px;position:relative}
+.tl div:before{content:"";position:absolute;left:-25px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--cy)}
+.tl small{color:var(--mu)}
+.muted{color:var(--mu);font-size:13px}
+[hidden]{display:none!important}
+
+/* Formatted LLM explanation */
+#exp{line-height:1.7;overflow-wrap:anywhere}
+#exp h2,#exp h3{color:var(--cy);margin:14px 0 6px;font-family:system-ui,sans-serif}
+#exp h2{font-size:17px}#exp h3{font-size:15px}
+#exp p{margin:7px 0}
+#exp ul,#exp ol{padding-left:24px;margin:7px 0}
+#exp li{margin:4px 0}
+#exp strong{color:#fff}
+#exp code{background:#0b1020;border:1px solid var(--line);border-radius:4px;padding:2px 5px;color:#a6f0d6}
+#exp pre{background:#0b1020;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+#exp pre code{border:0;padding:0}
+#exp blockquote{border-left:3px solid var(--cy);padding-left:12px;color:var(--mu);margin:8px 0}
+
+@media(max-width:760px){
+.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}
+.two{grid-template-columns:1fr}header{padding:12px 16px}main{padding:16px}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">Flarre<b>-</b>Fuzz</div>
+<nav>
+<button class="on" data-t="arena">Arena</button>
+<button data-t="ablation">Ablation</button>
+<button data-t="audit">Audit trail</button>
+</nav>
+<div class="pills"><span class="pill" id="p-api">API …</span><span class="pill" id="p-llm">LLM …</span></div>
+</header>
+<main>
+<section id="arena">
+<div class="muted">An adversarial safety layer for AI-written insurance code: Bully attacks, a deterministic Referee judges, a Fixer proposes, a human decides.</div>
+<div class="hero" id="ring">
+<div class="fighter" style="--c:var(--ro)"><h3>BULLY</h3><small>invents the nastiest customers</small><div class="n" id="bn">0</div><small>profiles launched</small></div>
+<div class="vs">VS</div>
+<div class="fighter" style="--c:var(--gr)"><h3>REFEREE</h3><small>deterministic code, no LLM</small><div class="n" id="rn">0</div><small>wrong answers caught</small></div>
+</div>
+<div class="steps" id="steps"></div>
+<div class="ctl">
+<span class="muted">Bully layers:</span>
+<button class="chip on" data-l="boundary">boundary</button>
+<button class="chip on" data-l="random">random</button>
+<button class="chip" data-l="llm" id="c-llm">LLM-invented</button>
+<button class="chip" id="toggle-code">Edit code under test</button>
+<span style="flex:1"></span><button id="run">Run scan</button>
+</div>
+<div id="code-box" hidden class="card">
+<div class="muted" style="margin-bottom:8px">AI-written code under test (5 bugs are planted).</div>
+<textarea id="code" rows="16" spellcheck="false"></textarea>
+</div>
+<div id="err" class="muted" style="color:var(--ro);margin-top:10px"></div>
+<div id="res" hidden>
+<div class="card">
+<div class="stats">
+<div class="stat"><b id="s1">0</b><span>profiles tested</span></div>
+<div class="stat"><b id="s2" style="color:var(--ro)">0</b><span>failures found</span></div>
+<div class="stat"><b id="s3" style="color:var(--gr)">0</b><span>failures after fix</span></div>
+<div class="stat"><b id="s4">0</b><span>seconds</span></div>
+</div>
+</div>
+<div id="notes" class="muted" style="margin-top:12px"></div>
+<div class="card">
+<h2>Coverage heatmap</h2>
+<div class="muted" style="margin-bottom:10px">Every cell is a (driver age, claims) pair. Red = Referee caught a wrong answer. Dark = never probed. Hover a cell for details.</div>
+<div class="hm" id="hm"></div>
+<div class="ax"><span>age 16</span><span>claims 0 (bottom) … 20 (top)</span><span>age 100</span></div>
+<div class="legend"><span><i style="background:#1a2142"></i>not probed</span><span><i style="background:#1d6b58"></i>passed</span><span><i style="background:var(--ro)"></i>failed</span><span id="hmtip"></span></div>
+</div>
+<div class="two">
+<div class="card"><h2>Root causes</h2><div id="bars"></div></div>
+<div class="card"><h2>Minimal reproductions</h2><div class="muted">Each failure shrunk to the simplest input that still breaks, with the spec clause it violates.</div><div id="repros"></div></div>
+</div>
+<div class="card">
+<h2>Proposed fix <span class="badge" id="src"></span></h2>
+<div class="muted" id="exp" style="margin-bottom:10px"></div>
+<div class="code" id="diff"></div>
+<div class="muted" style="margin-top:8px">Re-verified against the full suite before reaching you.</div>
+</div>
+<div class="card">
+<h2>Human review</h2>
+<div class="muted" style="margin-bottom:10px">Status: <b id="status"></b></div>
+<input id="reason" placeholder="Reason (optional)">
+<div style="margin-top:12px;display:flex;gap:10px">
+<button class="btn a" id="ap">Approve fix</button>
+<button class="btn r" id="rj">Reject fix</button>
+</div>
+<div id="toast" class="muted" style="margin-top:10px"></div>
+</div>
+</div>
+</section>
+<section id="ablation" hidden>
+<div class="card">
+<h2>Which Bully layer finds which bug?</h2>
+<div class="muted" style="margin-bottom:12px">Measured live on the backend. Numbers are failing cases. Note the hand-picked boundary layer misses the age-29 bug.</div>
+<div id="abl"></div>
+</div>
+</section>
+<section id="audit" hidden>
+<div class="card"><h2>Audit trail</h2><div class="tl" id="tl"></div></div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderMarkdown(text){
+  let s=esc(text||'');
+
+  // Normalize escaped Markdown characters and common HTML space entities
+  s=s.replace(/\\([#*`_])/g,'$1');
+  s=s.replace(/&#x20;|&nbsp;/gi,' ');
+
+  // Fenced code blocks: temporarily protect them from other formatting
+  const codeBlocks=[];
+  s=s.replace(/```([a-zA-Z0-9_-]*)\s*([\s\S]*?)```/g,(_,lang,code)=>{
+    const i=codeBlocks.length;
+    codeBlocks.push('<pre><code>'+code.trim()+'</code></pre>');
+    return `@@CODEBLOCK${i}@@`;
+  });
+
+  // Headings
+  s=s.replace(/^###\s+(.+)$/gm,'<h3>$1</h3>');
+  s=s.replace(/^##\s+(.+)$/gm,'<h2>$1</h2>');
+  s=s.replace(/^#\s+(.+)$/gm,'<h2>$1</h2>');
+
+  // Bold and italic
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+
+  // Inline code
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+
+  // Numbered and bullet lists
+  s=s.replace(/^\s*[-]\s+(.+)$/gm,'<li>$1</li>');
+  s=s.replace(/^\s*\d+\.\s+(.+)$/gm,'<li>$1</li>');
+
+  // Group consecutive list items
+  s=s.replace(/(?:<li>[\s\S]*?<\/li>\s*)+/g,match=>{
+    return '<ul>'+match+'</ul>';
+  });
+
+  // Restore code blocks
+  s=s.replace(/@@CODEBLOCK(\d+)@@/g,(_,i)=>codeBlocks[Number(i)]);
+
+  // Convert remaining newlines into line breaks
+  s=s.replace(/\n/g,'<br>');
+
+  return s;
+}
+
+async function api(p,o){
+  const r=await fetch(p,o);
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+
+const STEPS=['Bully','Sandbox','Referee','Fixer','Re-verify','Human'];
+let layers=new Set(['boundary','random']),scan=null,orig='',llmOn=false;
+
+$('#steps').innerHTML=STEPS.map(s=>`<span class="step">${s}</span>`).join('');
+const setSteps=(a,all)=>$$('.step').forEach((e,i)=>{
+  e.className='step'+(all||i<a?' done':'')+(!all&&i===a?' act':'');
+});
+const prof=p=>`age ${p.age} · ${p.claims} claim${p.claims==1?'':'s'} · ${[p.safe_driver&&'safe-driver',p.multi_policy&&'multi-policy'].filter(Boolean).join(' + ')||'no discounts'}`;
+const num=x=>typeof x==='number'?x:esc(x);
+
+function count(el,to,ms=900){
+  const t0=Date.now(),f=to%1?1:0;
+  (function tick(){
+    const k=Math.min(1,(Date.now()-t0)/ms);
+    el.textContent=(to*k).toFixed(f);
+    if(k<1)setTimeout(tick,30);
+    else el.textContent=to;
+  })();
+}
+
+// Heatmap grid
+const hm=$('#hm');
+hm.innerHTML=Array.from({length:21*85},(_,i)=>{
+  const c=20-Math.floor(i/85),a=16+i%85;
+  return `<i data-a="${a}" data-c="${c}" title="age ${a}, ${c} claims"></i>`;
+}).join('');
+const cells=[...hm.children];
+
+function diff(a,b){
+  a=a.split('\n');b=b.split('\n');
+  const n=a.length,m=b.length;
+  const L=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--)
+    for(let j=m-1;j>=0;j--)
+      L[i][j]=a[i]===b[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  const o=[];let i=0,j=0;
+  while(i<n&&j<m){
+    if(a[i]===b[j]){o.push([' ',a[i]]);i++;j++}
+    else if(L[i+1][j]>=L[i][j+1])o.push(['-',a[i++]]);
+    else o.push(['+',b[j++]]);
+  }
+  while(i<n)o.push(['-',a[i++]]);
+  while(j<m)o.push(['+',b[j++]]);
+  return o;
+}
+
+async function init(){
+  try{
+    const h=await api('/health');
+    $('#p-api').textContent='API online';
+    $('#p-api').className='pill ok';
+    llmOn=h.llm_configured;
+    $('#p-llm').textContent=llmOn?'LLM: '+h.model:'LLM: not configured (stored patch used)';
+    $('#p-llm').className='pill '+(llmOn?'ok':'warn');
+    const t=await api('/target');
+    $('#code').value=t.code;
+  }catch(e){
+    $('#p-api').textContent='API offline';
+    $('#p-api').className='pill warn';
+    $('#err').textContent='Backend not reachable: '+e.message;
+  }
+}
+
+async function run(){
+  $('#err').textContent='';
+  const btn=$('#run');
+  btn.disabled=true;
+  $('#ring').classList.add('go');
+  $('#res').hidden=true;
+  cells.forEach(c=>c.className='');
+  $('#bn').textContent=$('#rn').textContent='0';
+  orig=$('#code').value;
+  let done=false,i=0;
+  const req=api('/scans',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({code:orig,layers:[...layers]})
+  });
+  req.then(()=>done=true,()=>done=true);
+  while((!done||i<5)&&i<60){
+    setSteps(Math.min(i,4));
+    i++;
+    await sleep(400);
+  }
+  try{
+    scan=await req;
+  }catch(e){
+    $('#err').textContent='Scan failed: '+e.message;
+    btn.disabled=false;
+    $('#ring').classList.remove('go');
+    setSteps(0,false);
+    return;
+  }
+  await render(scan);
+  btn.disabled=false;
+  $('#ring').classList.remove('go');
+  setSteps(5);
+}
+
+async function render(s){
+  $('#res').hidden=false;
+  $('#notes').innerHTML=(s.notes||[]).map(n=>'⚠ '+esc(n)).join('<br>');
+
+  const fail=new Set(s.coverage.failed.map(p=>p.join(',')));
+  const pairs=s.coverage.tested.slice().sort(()=>Math.random()-.5);
+  const N=pairs.length,B=Math.ceil(N/28);
+
+  $('#res').scrollIntoView&&$('#res').scrollIntoView({behavior:'smooth',block:'start'});
+
+  for(let k=0;k<N;k+=B){
+    pairs.slice(k,k+B).forEach(([a,c])=>{
+      const e=cells[(20-c)*85+(a-16)];
+      if(e)e.className=fail.has(a+','+c)?'f':'t';
+    });
+    const f=Math.min(1,(k+B)/N);
+    $('#bn').textContent=Math.round(s.profiles*f);
+    $('#rn').textContent=Math.round(s.initial_failures*f);
+    await sleep(45);
+  }
+
+  $('#bn').textContent=s.profiles;
+  $('#rn').textContent=s.initial_failures;
+  count($('#s1'),s.profiles);
+  count($('#s2'),s.initial_failures);
+  count($('#s3'),s.remaining_failures);
+  count($('#s4'),s.seconds);
+
+  const mx=Math.max(1,...Object.values(s.failures_by_rule));
+  $('#bars').innerHTML=Object.entries(s.failures_by_rule).map(([r,n])=>
+    `<div class="bar"><span><b>${esc(r)}</b> · ${n} failures</span><div style="width:${Math.max(4,n/mx*100)}%"></div></div>`
+  ).join('')||'<span class="muted">No failures. Nothing to report.</span>';
+
+  $('#repros').innerHTML=s.repros.map(r=>
+    `<div class="rp"><b>${esc(r.rule)}</b> · ${esc(prof(r.minimal))}<div>expected <em class="ok">${num(r.expected)}</em> · got <em class="bad">${num(r.actual)}</em></div>${r.clause?`<div class="rc">↳ Spec ${esc(r.clause)}</div>`:''}</div>`
+  ).join('')||'<span class="muted">None.</span>';
+
+  const b=$('#src');
+  b.textContent=s.patch_source==='llm'?'LLM-generated':s.patch_source==='fallback'?'stored reference patch (LLM unavailable, see warnings)':'no patch';
+  b.className='badge '+s.patch_source;
+
+  // Render explanation as formatted, safely escaped Markdown
+  $('#exp').innerHTML=renderMarkdown(s.explanation);
+
+  // Keep the actual code diff safely escaped
+  $('#diff').innerHTML=diff(orig,s.patched_code).map(([t,l])=>
+    `<div class="d${t}">${t==' '?'  ':t+' '}${esc(l)}</div>`
+  ).join('');
+
+  $('#status').textContent=s.status.replace('_',' ');
+  $('#toast').textContent='';
+
+  hm.onmouseover=e=>{
+    const t=e.target;
+    if(t.dataset&&t.dataset.a)
+      $('#hmtip').textContent=`age ${t.dataset.a}, ${t.dataset.c} claims: ${t.className==='f'?'FAILED':t.className==='t'?'passed':'not probed'}`;
+  };
+}
+
+async function decide(d){
+  if(!scan)return;
+  try{
+    await api(`/scans/${scan.id}/decision`,{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({decision:d,reason:$('#reason').value})
+    });
+    $('#status').textContent=d;
+    $('#toast').textContent=`${d[0].toUpperCase()+d.slice(1)} and written to the audit trail.`;
+    loadAudit();
+  }catch(e){
+    $('#toast').textContent='Already decided or failed: '+e.message;
+  }
+}
+
+async function loadAudit(){
+  const a=await api('/audit');
+  $('#tl').innerHTML=a.map(x=>
+    `<div><b>${esc(x.event.replace('_',' '))}</b> <small>scan #${x.scan_id} · ${esc(x.ts)}</small><br><small>${esc(JSON.stringify(x.detail))}</small></div>`
+  ).join('')||'<span class="muted">No events yet. Run a scan.</span>';
+}
+
+async function loadAbl(){
+  const m=await api('/ablation');
+  const cf=m.configs;
+  $('#abl').innerHTML=
+    `<table><tr><th>Planted bug</th>${cf.map(c=>`<th>${esc(c)}</th>`).join('')}</tr>`+
+    Object.entries(m.bugs).map(([b,r])=>
+      `<tr><td>${esc(b)}</td>${cf.map(c=>r[c]?`<td class="f">found (${r[c]})</td>`:`<td class="m">MISSED</td>`).join('')}</tr>`
+    ).join('')+
+    `<tr><td class="muted">false alarms on correct code</td>${cf.map(c=>`<td>${m.false_alarms[c]}</td>`).join('')}</tr>`+
+    `<tr><td class="muted">profiles generated</td>${cf.map(c=>`<td>${m.profiles[c]}</td>`).join('')}</tr></table>`+
+    (m.llm_measured?'':'<p class="muted">LLM layers not measured: no API key configured on the backend.</p>');
+}
+
+$$('nav button').forEach(b=>b.onclick=()=>{
+  $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['arena','ablation','audit'].forEach(s=>$('#'+s).hidden=s!==b.dataset.t);
+  if(b.dataset.t==='audit')loadAudit().catch(e=>$('#tl').textContent=e.message);
+  if(b.dataset.t==='ablation')loadAbl().catch(e=>$('#abl').textContent=e.message);
+});
+
+$$('.chip[data-l]').forEach(c=>c.onclick=()=>{
+  const l=c.dataset.l;
+  layers.has(l)?layers.delete(l):layers.add(l);
+  c.classList.toggle('on',layers.has(l));
+});
+
+$('#toggle-code').onclick=()=>$('#code-box').hidden=!$('#code-box').hidden;
+$('#run').onclick=run;
+$('#ap').onclick=()=>decide('approved');
+$('#rj').onclick=()=>decide('rejected');
+init();
+</script>
+</body>
+</html>

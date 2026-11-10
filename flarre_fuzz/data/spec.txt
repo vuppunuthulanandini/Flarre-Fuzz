@@ -1,0 +1,8 @@
+Personal auto premium rules:
+1. Base premium is 500.
+2. Driver age under 25: multiply by 1.5.
+3. Driver age 70 or over: multiply by 1.3.
+4. Drivers aged 25 to 29 inclusive with 2 or more claims: multiply by 1.10 (high-risk surcharge).
+5. Each claim adds 10% to the premium, capped at +50% in total.
+6. Safe-driver discount is 10%. Multi-policy discount is 15%. Total discount is capped at 20%.
+7. Final premium is rounded to 2 decimal places.

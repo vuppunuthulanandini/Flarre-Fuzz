@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flarre-Fuzz: Interactive Presentation</title>
+<style>
+:root{--bg:#0b1020;--card:#151b33;--c2:#1a2142;--line:#2a3354;--tx:#e8ecf8;--mu:#9aa5c2;--cy:#1fb6e8;--ro:#e8557a;--gr:#2ecc9a;--am:#f5a623;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:inherit}
+body{margin:0;background:radial-gradient(1100px 560px at 12% -10%,#18235a 0,transparent 60%),radial-gradient(800px 480px at 100% 0,#2a1238 0,transparent 55%),var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;color:var(--mu);font-size:13px}.top b{font:700 18px Cambria,Georgia,serif;color:#fff}.top b i{color:var(--ro);font-style:normal}
+.dots{display:flex;gap:7px}.dots button{width:11px;height:11px;border-radius:50%;border:1px solid var(--mu);background:transparent;padding:0;cursor:pointer}.dots button.on{background:var(--cy);border-color:var(--cy);box-shadow:0 0 8px var(--cy)}
+.stage{max-width:1160px;margin:0 auto;padding:10px 28px 90px;min-height:calc(100vh - 150px);animation:in .45s}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.k{color:var(--cy);font-weight:700;letter-spacing:3px;font-size:12px;text-transform:uppercase}
+h1{font:700 clamp(40px,8vw,84px)/1.02 Cambria,Georgia,serif;margin:10px 0}h1 b{color:var(--ro)}
+h2{font:700 clamp(28px,4.4vw,42px)/1.15 Cambria,Georgia,serif;margin:6px 0 18px}h3{font:700 22px Cambria,Georgia,serif;margin:0 0 6px}
+.lead{font-size:clamp(18px,2.2vw,24px);color:#d6dcee;max-width:880px}.mu{color:var(--mu)}
+.g{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:linear-gradient(180deg,var(--card),#121830);border:1px solid var(--line);border-radius:16px;padding:18px 20px}.card.c{border:2px solid var(--c)}.card h3{color:var(--c,#fff)}
+.card p{margin:6px 0 0;color:#d6dcee;font-size:15px}.big{font:700 52px ui-monospace,Menlo,monospace}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button.ch{background:transparent;color:var(--mu);border:1px solid var(--line);border-radius:999px;padding:7px 15px;font:inherit;font-size:14px;cursor:pointer}button.ch.on{color:#fff;border-color:var(--cy);background:rgba(31,182,232,.16)}
+button.go{background:linear-gradient(90deg,var(--ro),#c43a63);color:#fff;border:0;border-radius:12px;padding:11px 26px;font:700 16px inherit;cursor:pointer;box-shadow:0 6px 20px rgba(232,85,122,.35)}button.go:disabled{opacity:.5}
+button.go.alt{background:linear-gradient(90deg,#1fa57d,var(--gr));color:#06210f;box-shadow:none}
+.hm{display:grid;grid-template-columns:repeat(85,1fr);gap:1px}.hm i{aspect-ratio:1;background:#1a2142}.hm i.t{background:#1d6b58}.hm i.f{background:var(--ro)}
+.feed{font:12.5px/1.7 ui-monospace,Menlo,monospace;color:#ffb3c6;min-height:90px}.feed span{color:var(--mu)}
+.bug{border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:14px;transition:.3s}.bug.found{border-color:var(--gr);background:rgba(46,204,154,.12);color:#fff}.bug.miss{border-color:var(--ro);color:var(--ro)}.bug.off{opacity:.4}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mu);font-weight:600}td.f{color:var(--gr);font-weight:700}td.m{color:var(--ro);font-weight:800}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.flow .s{background:var(--card);border:2px solid var(--c);border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:700;color:#fff}.flow .s.on{background:#24306b;box-shadow:0 0 16px var(--c)}.flow em{color:var(--mu);font-style:normal}
+.qa button{width:100%;text-align:left;background:var(--card);color:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;font:700 17px inherit;cursor:pointer;margin-top:12px}.qa button.on{border-color:var(--cy)}.qa div{color:#d6dcee;padding:10px 18px 4px;font-size:15.5px}
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:14px;align-items:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(11,16,32,.9);backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+.nav button{background:var(--card);color:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 20px;font:inherit;cursor:pointer}.nav span{color:var(--mu);min-width:64px;text-align:center}
+.note{font-size:13px;color:var(--mu);margin-top:10px}
+@media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}.top{padding:12px 16px}.stage{padding:8px 16px 90px}.dots{display:none}}
+</style></head><body>
+<div class="top"><b>Flarre<i>-</i>Fuzz</b><div class="dots" id="dots"></div><span>Flarre AI Innovation Challenge 2026</span></div>
+<div class="stage" id="stage"></div>
+<div class="nav"><button id="pv">← Prev</button><span id="ct"></span><button id="nx">Next →</button></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],sleep=ms=>new Promise(r=>setTimeout(r,ms));
+/* ---------- in-browser port of the engine (for the live demo) ---------- */
+const BUGNAMES={age:'age 25 boundary',mid:'age-29 surcharge',cap:'claims cap',disc:'discount cap',trunc:'rounding'};
+function prem(a,c,s,m,B){let b=500;if(B.age?a<=25:a<25)b*=1.5;if(a>=70)b*=1.3;if(B.mid?(a>=25&&a<29&&c>=2):(a>=25&&a<=29&&c>=2))b*=1.1;
+ b*=1+(B.cap?.1*c:Math.min(.1*c,.5));const d=(s?.1:0)+(m?.15:0);b*=1-(B.disc?d:Math.min(d,.2));return B.trunc?Math.trunc(b):Math.round(b*100)/100}
+const ref=(a,c,s,m)=>prem(a,c,s,m,{});
+function rng(x){return()=>{x|=0;x=x+0x6D2B79F5|0;let t=Math.imul(x^x>>>15,1|x);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gen(){const o=[],seen=new Set(),add=p=>{const k=p.join();if(!seen.has(k)){seen.add(k);o.push(p)}};
+ for(const a of[16,17,24,25,26,69,70,71,100])for(const c of[0,1,5,6,7,20])for(const s of[0,1])for(const m of[0,1])add([a,c,!!s,!!m]);
+ const r=rng(42);for(let i=0;i<1000;i++)add([16+Math.floor(r()*85),Math.floor(r()*21),r()<.5,r()<.5]);return o}
+function rootCause(p,B){let best=null,bv=1e9;for(const k in B){if(!B[k])continue;const B2={...B,[k]:0},e=Math.abs(prem(...p,B2)-ref(...p));if(e<bv){bv=e;best=k}}return best}
+/* ---------- slides ---------- */
+const S=[
+()=>`<div class="k">Flarre AI Innovation Challenge 2026</div><h1>Flarre<b>-</b>Fuzz</h1><p class="lead">An AI boxing ring that attacks AI-written insurance code <i>before</i> it reaches a carrier's systems.</p><div class="row" style="margin-top:26px"><span class="card c" style="--c:var(--ro);padding:10px 22px"><h3>BULLY</h3></span><span class="mu big" style="font-size:30px">vs</span><span class="card c" style="--c:var(--gr);padding:10px 22px"><h3>REFEREE</h3></span></div><p class="mu" style="margin-top:30px">[Your Full Name] · [Your College Name]</p>`,
+()=>`<div class="k">The problem</div><h2>A small math error can misprice thousands of policies</h2><div class="g g3"><div class="card c" style="--c:var(--ro)"><h3>AI writes the code</h3><p>Insurance platforms use AI agents to write pricing and rating logic. Speed goes up, and so does the risk of a quiet mistake.</p></div><div class="card c" style="--c:var(--am)"><h3>Humans test by hand</h3><p>Engineers write tests for the cases they already expect. It is slow, and the rare cases slip through.</p></div><div class="card c" style="--c:var(--cy)"><h3>Errors scale</h3><p>One bug runs on every policy it touches: lost revenue, unhappy customers, regulatory exposure.</p></div></div><p class="lead" style="margin-top:26px">Wrong boundary. Missing cap. Bad rounding. All are small, and all are expensive.</p>`,
+()=>`<div class="k">The idea</div><h2>Four roles. One rule: <b style="color:var(--gr)">code</b> judges correctness.</h2><div class="g g4"><div class="card c" style="--c:var(--ro)"><h3>Bully</h3><p>Invents attack inputs: boundary values, random fuzzing, rare profiles from an LLM.</p></div><div class="card c" style="--c:var(--gr)"><h3>Referee</h3><p>Checks every answer against must-always-hold rules and a trusted reference. No LLM, so it is repeatable.</p></div><div class="card c" style="--c:var(--am)"><h3>Fixer</h3><p>Shrinks failures, cites the broken spec clause, proposes a patch. The full suite re-runs on it.</p></div><div class="card c" style="--c:var(--cy)"><h3>Human</h3><p>Sees the diff and the re-test, approves or rejects. Everything lands in an audit trail.</p></div></div><p class="note">LLMs handle creativity and explanation. Deterministic code handles correctness.</p>`,
+()=>`<div class="k">Architecture</div><h2>One scan, end to end</h2><div class="flow" id="fl"></div><div class="card" id="fd" style="margin-top:18px;min-height:110px"></div><p class="note">Stack: Python · FastAPI · Pydantic · SQLite · vanilla JS UI · optional LLM API. The full clickable diagram is the companion page.</p>`,
+()=>`<div class="k">Live demo · runs in your browser</div><h2>Watch the Bully find the planted bugs</h2><div class="row"><span class="mu">Plant:</span>${Object.entries(BUGNAMES).map(([k,v])=>`<button class="ch on" data-b="${k}">${v}</button>`).join('')}</div>
+<div class="row" style="margin:14px 0"><button class="go" id="dr">Run scan</button><button class="go alt" id="df" disabled>Apply stored fix and re-verify</button><span class="mu" id="dst"></span></div>
+<div class="g g4" style="margin-bottom:14px"><div class="card"><div class="big" id="d1">0</div><span class="mu">profiles tested</span></div><div class="card"><div class="big" id="d2" style="color:var(--ro)">0</div><span class="mu">wrong answers</span></div><div class="card"><div class="big" id="d3" style="color:var(--gr)">0</div><span class="mu">bugs traced</span></div><div class="card"><div class="big" id="d4">0</div><span class="mu">seconds</span></div></div>
+<div class="g" style="grid-template-columns:2fr 1fr"><div class="card"><div class="hm" id="dh"></div><div class="mu" style="font-size:12px;margin-top:6px">age 16 → 100 (left to right), claims 0 (bottom) → 20 (top). Red = Referee caught a wrong price.</div></div><div class="card"><div class="mu" style="margin-bottom:6px">Root causes</div><div class="g" id="db"></div></div></div>
+<div class="card feed" id="dfeed" style="margin-top:14px"><span>live failures appear here…</span></div>
+<p class="note">This is a JavaScript port of the Python engine. The Referee here compares against the reference (the Python version also checks invariants), and root causes are traced by testing which single fix removes each failure. The fix step uses the stored correct patch; the real LLM Fixer needs the backend and an API key.</p>`,
+()=>`<div class="k">Results · measured on the Python backend</div><h2>Which layer finds which bug?</h2><table><tr><th>Planted bug</th><th>Boundary only</th><th>Random only</th><th>Boundary + random</th></tr>
+<tr><td>age_boundary</td><td class="f">found (24)</td><td class="f">found (11)</td><td class="f">found (33)</td></tr><tr><td>surcharge_cap</td><td class="f">found (137)</td><td class="f">found (777)</td><td class="f">found (904)</td></tr><tr><td>discount_cap</td><td class="f">found (108)</td><td class="f">found (263)</td><td class="f">found (362)</td></tr><tr><td>truncation</td><td class="f">found (89)</td><td class="f">found (313)</td><td class="f">found (392)</td></tr><tr><td>mid_range_boundary (age 29)</td><td class="m">MISSED</td><td class="f">found (8)</td><td class="f">found (8)</td></tr><tr><td class="mu">false alarms on correct code</td><td>0</td><td>0</td><td>0</td></tr><tr><td class="mu">profiles generated</td><td>216</td><td>935</td><td>1,126</td></tr></table>
+<div class="g g2" style="margin-top:18px"><div class="card c" style="--c:var(--am)"><h3>The insight</h3><p>Hand-picked boundaries never probe age 29, so they miss that bug. More layers matter, and a layer that reads the spec could probe every threshold.</p></div><div class="card c" style="--c:var(--cy)"><h3>Honest status</h3><p>The LLM layers are built and validated but not yet measured. They appear as extra columns once an API key is configured.</p></div></div>`,
+()=>`<div class="k">Engineering depth</div><h2>Every skill has a real job in this project</h2><table><tr><th>Skill</th><th>Where it is used</th></tr>
+<tr><td>Python and software practice</td><td>Packaged codebase, 17 tests, Git history</td></tr><tr><td>Data structures and algorithms</td><td>Hash-map neighbour checks for the monotonic invariant; delta-debugging shrinker; set-based dedupe</td></tr>
+<tr><td>REST APIs and backend</td><td>FastAPI: /scans, /decision, /audit, /ablation</td></tr><tr><td>JSON, databases</td><td>SQLite persistence; Pydantic validation of every LLM output</td></tr>
+<tr><td>LLMs and GenAI</td><td>Bully invents rare cases; Fixer proposes patches; both validated before use</td></tr><tr><td>Retrieval and semantic search</td><td>TF-IDF clause retrieval links failures to the spec rule; embeddings and a vector DB are the scale-up</td></tr>
+<tr><td>Agent frameworks</td><td>Orchestrator is plain Python by choice; it maps directly onto a LangGraph state graph</td></tr><tr><td>Business problem to AI solution</td><td>The LLM-versus-deterministic split is the core design decision</td></tr></table>`,
+()=>`<div class="k">Honest positioning</div><h2>A second opinion, not a replacement</h2><div class="g g3"><div class="card c" style="--c:var(--gr)"><h3>Where it fits</h3><p>Flarre's platform already includes a Testing Agent. Flarre-Fuzz is designed as an extra adversarial layer: an agent whose only job is to break the code before deployment.</p></div><div class="card c" style="--c:var(--am)"><h3>What I do not claim</h3><p>Not "100% safe": testing cannot prove the absence of bugs. The Referee is only as good as its rules. LLM patches can be wrong, so they are re-verified and a human approves.</p></div><div class="card c" style="--c:var(--cy)"><h3>Next steps</h3><p>Measure the LLM layers across runs. Add rule sets. Container isolation, durable workflows, and a vector DB for large rulebooks.</p></div></div>`,
+()=>`<div class="k">Tough questions</div><h2>Click a question</h2><div class="qa" id="qa"></div>`];
+const QA=[['Why not just paste it into ChatGPT?','An LLM can draft a change or a test, but it can hallucinate, and nobody can prove its answer is right. Here it only creates and explains. The judging is plain code that is repeatable, and every fix is re-run against the whole suite, approved by a human, and logged.'],
+['How does the Referee know what is correct?','Two ways. Invariants that must always hold (premium positive, capped, more claims never cheaper, discount cap), and a trusted reference implementation of the written spec. If the reference or invariants are wrong, the verdicts are wrong, so those are the part humans review.'],
+['Does Flarre not already have a Testing Agent?','Yes, and I do not know its internals. I designed this as a complementary adversarial layer that could plug into it: its only job is to break code with rare and extreme cases. It does not replace engineers or the existing agent.'],
+['What is actually proven so far?','On a toy calculator with five planted bugs, the deterministic layers find all five with zero false alarms, and the ablation shows which layer misses what. The LLM layers are built and validated but not yet measured.']];
+const FL=[['Input','#1fb6e8','AI-written code plus the written business rules.'],['Bully','#e8557a','Launches about 1,100 tricky customer profiles: boundary, random, and optional LLM-invented.'],['Sandbox','#f5a623','Runs the code in an isolated subprocess with a timeout. Hangs and crashes become findings.'],['Referee','#2ecc9a','Deterministic judge: invariants plus a reference calculator. No LLM.'],['Fixer','#e8557a','Shrinks failures to minimal cases, cites the spec clause, proposes a patch.'],['Re-verify','#2ecc9a','The whole suite re-runs on the patch. Only a proven fix moves on.'],['Human','#1fb6e8','Reviewer approves or rejects. Everything is written to the audit trail.']];
+/* ---------- navigation ---------- */
+let cur=0;$('#dots').innerHTML=S.map((_,i)=>`<button aria-label="slide ${i+1}" data-i="${i}"></button>`).join('');
+function show(i){cur=Math.max(0,Math.min(S.length-1,i));const st=$('#stage');st.style.animation='none';void st.offsetWidth;st.style.animation='';st.innerHTML=S[cur]();
+ $$('.dots button').forEach((b,k)=>b.classList.toggle('on',k===cur));$('#ct').textContent=`${cur+1} / ${S.length}`;
+ if(location.hash!=='#s'+(cur+1))history.replaceState(null,'','#s'+(cur+1));init(cur)}
+function init(i){
+ if(i===3){$('#fl').innerHTML=FL.map((f,k)=>`<span class="s" style="--c:${f[1]}" data-k="${k}">${f[0]}</span>${k<FL.length-1?'<em>→</em>':''}`).join('');
+  const pick=k=>{$$('#fl .s').forEach((e,j)=>e.classList.toggle('on',j===k));$('#fd').innerHTML=`<h3 style="color:${FL[k][1]}">${FL[k][0]}</h3><p style="font-size:17px">${FL[k][2]}</p>`};
+  $$('#fl .s').forEach(e=>e.onclick=()=>pick(+e.dataset.k));pick(3)}
+ if(i===4)demo();
+ if(i===8){$('#qa').innerHTML=QA.map((q,k)=>`<button data-k="${k}">${q[0]}</button><div hidden>${q[1]}</div>`).join('');
+  $$('#qa button').forEach(b=>b.onclick=()=>{const d=b.nextElementSibling;d.hidden=!d.hidden;b.classList.toggle('on',!d.hidden)})}}
+/* ---------- live demo ---------- */
+function demo(){const B={age:1,mid:1,cap:1,disc:1,trunc:1};let busy=false;
+ const hm=$('#dh');hm.innerHTML=Array.from({length:21*85},()=>'<i></i>').join('');const cells=[...hm.children];
+ const reset=()=>{cells.forEach(c=>c.className='');['d1','d2','d3','d4'].forEach(k=>$('#'+k).textContent='0');$('#dfeed').innerHTML='<span>live failures appear here…</span>';
+  $('#db').innerHTML=Object.entries(BUGNAMES).map(([k,v])=>`<div class="bug${B[k]?'':' off'}" id="b-${k}">${v}<br><small class="mu">${B[k]?'waiting':'not planted'}</small></div>`).join('')};
+ $$('[data-b]').forEach(b=>b.onclick=()=>{if(busy)return;B[b.dataset.b]=B[b.dataset.b]?0:1;b.classList.toggle('on',!!B[b.dataset.b]);reset()});
+ async function scan(BB,label){if(busy)return;busy=true;$('#dr').disabled=$('#df').disabled=true;reset();$('#dst').textContent=label;
+  const P=gen(),cnt={},t0=Date.now();let fails=0;const feed=[];
+  for(let i=0;i<P.length;i+=45){for(const p of P.slice(i,i+45)){const v=prem(...p,BB),e=ref(...p),e0=Math.abs(v-e)>.005,cell=cells[(20-p[1])*85+(p[0]-16)];
+    if(e0){fails++;const k=rootCause(p,BB);cnt[k]=(cnt[k]||0)+1;cell.className='f';feed.push(`<div>age ${p[0]} · ${p[1]} claims · ${p[2]?'safe':''}${p[3]?' multi':''} <span>→ got ${v}, expected ${e}</span></div>`)}else if(cell.className!=='f')cell.className='t'}
+   $('#d1').textContent=Math.min(P.length,i+45);$('#d2').textContent=fails;$('#d3').textContent=Object.keys(cnt).length;$('#d4').textContent=((Date.now()-t0)/1000).toFixed(1);
+   $('#dfeed').innerHTML=feed.slice(-5).join('');
+   for(const k in BUGNAMES){const e=$('#b-'+k);if(!B[k]&&!BB[k])continue;if(cnt[k]){e.className='bug found';e.querySelector('small').textContent=`traced (${cnt[k]})`}}
+   await sleep(40)}
+  for(const k in BUGNAMES){if(BB[k]&&!cnt[k]){const e=$('#b-'+k);e.className='bug miss';e.querySelector('small').textContent='MISSED'}}
+  $('#dst').textContent=fails?`${fails} wrong answers caught across ${P.length} profiles`:`Clean: no failures across ${P.length} profiles`;
+  busy=false;$('#dr').disabled=false;$('#df').disabled=!fails}
+ $('#dr').onclick=()=>scan({...B},'Scanning…');$('#df').onclick=()=>scan({},'Re-verifying the stored fix…');reset()}
+$('#pv').onclick=()=>show(cur-1);$('#nx').onclick=()=>show(cur+1);$$('.dots button').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown')show(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')show(cur-1)});
+addEventListener('hashchange',()=>{const n=parseInt((location.hash.match(/^#s(\d+)$/)||[])[1]);if(n&&n-1!==cur)show(n-1)});
+show((parseInt((location.hash.match(/^#s(\d+)$/)||[])[1])||1)-1);
+</script></body></html>
