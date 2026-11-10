@@ -80,7 +80,7 @@ uvicorn flarre_fuzz.api:app --reload
 
 Open `http://127.0.0.1:8000`
 
-### 🛡️ Our Design Philosophy
+### 🛡️ My Design Philosophy
 
 **AI explores. Deterministic rules judge. Humans approve.**
 
